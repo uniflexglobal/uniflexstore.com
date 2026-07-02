@@ -1,6 +1,8 @@
 import 'server-only'
 import { db } from '@/server/db'
 import type { CrmRole } from '@prisma/client'
+import { getAllDocuments } from './documents'
+import { getReportsSummaryStats } from './reports'
 
 function startOfWeek(): Date {
   const d = new Date()
@@ -22,31 +24,45 @@ export async function getCallerDashboard(staffId: string) {
 }
 
 export async function getDispatcherDashboard(staffId: string) {
-  const [newlyAssigned, activeCarriers, expiringDocs] = await Promise.all([
+  const [newlyAssigned, activeCarriers, documents] = await Promise.all([
     db.lead.count({ where: { assignedToId: staffId, status: 'ASSIGNED' } }),
     db.carrier.count({ where: { assignedDispatcherId: staffId, status: 'ACTIVE' } }),
-    // Document expiry tracking lands in Phase B — always 0 for now, field kept
-    // so the dashboard card doesn't need reshaping later.
-    Promise.resolve(0),
+    getAllDocuments({ dispatcherId: staffId }),
   ])
+  const expiringDocs = documents.filter((d) => d.expiryStatus === 'expired' || d.expiryStatus === 'expiring').length
   return { newlyAssigned, activeCarriers, expiringDocs }
 }
 
 export async function getAdminDashboard() {
-  const [totalProspects, totalLeads, awaitingAssignment, awaitingCount, totalCarriers, totalStaff] = await Promise.all([
-    db.prospect.count(),
-    db.lead.count(),
-    db.lead.findMany({
-      where: { status: 'AWAITING_ASSIGNMENT' },
-      orderBy: { createdAt: 'asc' },
-      take: 10,
-      include: { qualifiedBy: { select: { name: true } } },
-    }),
-    db.lead.count({ where: { status: 'AWAITING_ASSIGNMENT' } }),
-    db.carrier.count(),
-    db.crmStaff.count({ where: { isActive: true } }),
-  ])
-  return { totalProspects, totalLeads, awaitingAssignment, awaitingCount, totalCarriers, totalStaff }
+  const [totalProspects, totalLeads, awaitingAssignment, awaitingCount, totalCarriers, totalStaff, documents, summary] =
+    await Promise.all([
+      db.prospect.count(),
+      db.lead.count(),
+      db.lead.findMany({
+        where: { status: 'AWAITING_ASSIGNMENT' },
+        orderBy: { createdAt: 'asc' },
+        take: 10,
+        include: { qualifiedBy: { select: { name: true } } },
+      }),
+      db.lead.count({ where: { status: 'AWAITING_ASSIGNMENT' } }),
+      db.carrier.count(),
+      db.crmStaff.count({ where: { isActive: true } }),
+      getAllDocuments(),
+      getReportsSummaryStats(),
+    ])
+  const expiringDocs = documents.filter((d) => d.expiryStatus === 'expired' || d.expiryStatus === 'expiring').length
+  return {
+    totalProspects,
+    totalLeads,
+    awaitingAssignment,
+    awaitingCount,
+    totalCarriers,
+    totalStaff,
+    expiringDocs,
+    activeCarriers: summary.activeCarriers,
+    loadsThisMonth: summary.loadsThisMonth,
+    revenueThisMonth: summary.revenueThisMonth,
+  }
 }
 
 export async function getCrmDashboard(role: CrmRole, staffId: string) {

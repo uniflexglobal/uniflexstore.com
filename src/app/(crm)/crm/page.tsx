@@ -1,10 +1,11 @@
-import { Phone, ClipboardCheck, Truck, Users, ClipboardList, Building2 } from 'lucide-react'
+import { Phone, ClipboardCheck, Truck, Users, ClipboardList, FileWarning, DollarSign, Package } from 'lucide-react'
 import { getSession } from '@/lib/dal'
 import { getCrmDashboard } from '@/server/queries/crm/dashboard'
 import { getActiveDispatchers } from '@/server/queries/crm/leads'
 import { CrmTopbar } from '@/components/crm/topbar'
 import { StatCard } from '@/components/admin/stat-card'
 import { AwaitingAssignmentQueue } from '@/components/crm/awaiting-assignment-queue'
+import { formatUSD } from '@/lib/utils'
 
 export default async function CrmDashboardPage() {
   const session = await getSession()
@@ -27,7 +28,12 @@ export default async function CrmDashboardPage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <StatCard title="Newly assigned leads" value={stats.newlyAssigned} icon={ClipboardList} />
             <StatCard title="Active carriers" value={stats.activeCarriers} icon={Truck} />
-            <StatCard title="Documents expiring" value={stats.expiringDocs} icon={Building2} />
+            <StatCard
+              title="Documents expiring"
+              value={stats.expiringDocs}
+              icon={FileWarning}
+              iconColor={stats.expiringDocs > 0 ? 'text-[var(--warning)]' : undefined}
+            />
           </div>
         )}
 
@@ -36,8 +42,19 @@ export default async function CrmDashboardPage() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <StatCard title="Total prospects" value={stats.totalProspects} icon={Phone} />
               <StatCard title="Total leads" value={stats.totalLeads} icon={ClipboardList} />
-              <StatCard title="Total carriers" value={stats.totalCarriers} icon={Truck} />
+              <StatCard title="Active carriers" value={stats.activeCarriers} icon={Truck} />
               <StatCard title="Active staff" value={stats.totalStaff} icon={Users} />
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <StatCard title="Loads this month" value={stats.loadsThisMonth} icon={Package} />
+              <StatCard title="Revenue this month" value={formatUSD(stats.revenueThisMonth)} icon={DollarSign} />
+              <StatCard
+                title="Documents expiring"
+                value={stats.expiringDocs}
+                icon={FileWarning}
+                iconColor={stats.expiringDocs > 0 ? 'text-[var(--warning)]' : undefined}
+              />
             </div>
 
             <div className="mt-8">
