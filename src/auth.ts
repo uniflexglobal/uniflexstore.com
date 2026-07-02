@@ -68,18 +68,63 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
       },
     }),
+    // Staff login for the Uniflex Global Logistics CRM (uniflexstore.com/crm).
+    // Fully separate identity from storefront customers/admins — queries
+    // CrmStaff, not User. See src/app/crm/login for the form that calls this.
+    Credentials({
+      id: 'crm-login',
+      credentials: {
+        email: { type: 'email' },
+        password: { type: 'password' },
+      },
+      async authorize(credentials) {
+        const parsed = loginSchema.safeParse(credentials)
+        if (!parsed.success) return null
+
+        const { email, password } = parsed.data
+
+        const staff = await db.crmStaff.findUnique({
+          where: { email: email.toLowerCase() },
+        })
+
+        // Always run bcrypt.compare to prevent email enumeration via timing.
+        const hash = staff?.passwordHash ?? DUMMY_HASH
+        const valid = await bcrypt.compare(password, hash)
+
+        if (!staff || !valid || !staff.isActive) return null
+
+        return {
+          id: staff.id,
+          email: staff.email,
+          name: staff.name,
+          userType: 'crm' as const,
+          crmRole: staff.role,
+        }
+      },
+    }),
   ],
   callbacks: {
     async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id
-        token.role = user.role ?? 'CUSTOMER'
-        // OAuth always gets 30 days; credentials respects the remember-me checkbox.
-        const days = account || user.rememberMe !== false ? 30 : 1
-        token.sessionEnd = Date.now() + days * 24 * 60 * 60 * 1000
+        if (user.userType === 'crm') {
+          token.userType = 'crm'
+          token.crmRole = user.crmRole
+          // CRM staff sessions: flat 30 days, no remember-me toggle.
+          token.sessionEnd = Date.now() + 30 * 24 * 60 * 60 * 1000
+        } else {
+          token.role = user.role ?? 'CUSTOMER'
+          // OAuth always gets 30 days; credentials respects the remember-me checkbox.
+          const days = account || user.rememberMe !== false ? 30 : 1
+          token.sessionEnd = Date.now() + days * 24 * 60 * 60 * 1000
+        }
       }
-      // Re-check ban status on every token refresh so bans take effect within one refresh cycle
-      if (token.id) {
+      if (token.id && token.userType === 'crm') {
+        // Re-check active status on every refresh so a deactivated staffer is cut off promptly.
+        const staff = await db.crmStaff.findUnique({ where: { id: token.id as string }, select: { isActive: true } })
+        if (!staff?.isActive) return null
+      } else if (token.id) {
+        // Re-check ban status on every token refresh so bans take effect within one refresh cycle
         const dbUser = await db.user.findUnique({ where: { id: token.id as string }, select: { isBanned: true } })
         if (dbUser?.isBanned) return null
       }
@@ -88,8 +133,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     session({ session, token }) {
       if (token) {
         session.user.id = token.id as string
-        session.user.role = token.role as string
         session.user.sessionEnd = token.sessionEnd as number
+        if (token.userType === 'crm') {
+          session.user.userType = 'crm'
+          session.user.crmRole = token.crmRole as string
+        } else {
+          session.user.role = token.role as string
+        }
       }
       return session
     },

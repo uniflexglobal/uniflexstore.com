@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { checkLogisticsLeadRate } from '@/lib/rate-limit'
 import { sendLogisticsLeadEmail } from '@/lib/email'
+import { db } from '@/server/db'
 
 const leadSchema = z.object({
   name: z.string().trim().min(2).max(100),
@@ -34,10 +35,32 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  // The CRM record is the source of truth for this lead — the email below is
+  // a best-effort notification, not the only record of the submission.
+  const prospect = await db.prospect
+    .create({
+      data: {
+        name: parsed.data.name,
+        phone: parsed.data.phone,
+        email: parsed.data.email,
+        truckType: parsed.data.truckType,
+        route: parsed.data.route || null,
+        message: parsed.data.message || null,
+        source: 'LOGISTICS_FORM',
+      },
+    })
+    .catch((err) => {
+      console.error('Failed to save logistics lead to CRM:', err)
+      return null
+    })
+
   try {
     await sendLogisticsLeadEmail(parsed.data)
   } catch (err) {
     console.error('Failed to send logistics lead email:', err)
+  }
+
+  if (!prospect) {
     return NextResponse.json(
       { error: 'Failed to submit request. Please call dispatch directly.' },
       { status: 500 }

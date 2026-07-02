@@ -80,3 +80,9 @@ export async function checkLogisticsLeadRate(): Promise<boolean> {
   const ip = await getIp()
   return check(`logistics-lead:${ip}`, 5, 60 * 60 * 1000)
 }
+
+/** 5 CRM login attempts per 15 minutes per IP — independent bucket from checkLoginRate() */
+export async function checkCrmLoginRate(): Promise<boolean> {
+  const ip = await getIp()
+  return check(`crm-login:${ip}`, 5, 15 * 60 * 1000)
+}

@@ -29,13 +29,13 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts      Account[]
-  sessions      Session[]
-  orders        Order[]
-  reviews       Review[]
-  addresses     Address[]
-  wishlistItems WishlistItem[]
-  cartItems     CartItem[]
+  accounts       Account[]
+  sessions       Session[]
+  orders         Order[]
+  reviews        Review[]
+  addresses      Address[]
+  wishlistItems  WishlistItem[]
+  cartItems      CartItem[]
   couponUsages   CouponUsage[]
   returnRequests ReturnRequest[]
   chatThread     ChatThread?
@@ -116,8 +116,8 @@ model Category {
   sortOrder   Int     @default(0)
   isActive    Boolean @default(true)
 
-  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
-  children Category[] @relation("CategoryTree")
+  parent   Category?         @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[]        @relation("CategoryTree")
   products ProductCategory[]
 
   createdAt DateTime @default(now())
@@ -348,8 +348,8 @@ model Address {
   line1      String
   line2      String?
   city       String
-  state      String  // 2-letter US state code: "CA", "NY", "TX"…
-  postalCode String  // validated as 5-digit or ZIP+4 in app layer
+  state      String // 2-letter US state code: "CA", "NY", "TX"…
+  postalCode String // validated as 5-digit or ZIP+4 in app layer
   country    String  @default("US")
   isDefault  Boolean @default(false)
 
@@ -470,8 +470,8 @@ model Banner {
 
 model ChatThread {
   id        String   @id @default(cuid())
-  sessionId String?  @unique  // anonymous browser session
-  userId    String?  @unique  // logged-in user (one thread per user)
+  sessionId String?  @unique // anonymous browser session
+  userId    String?  @unique // logged-in user (one thread per user)
   messages  Json     @default("[]")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -488,4 +488,385 @@ model StoreSetting {
   key       String   @id
   value     String
   updatedAt DateTime @updatedAt
+}
+
+// ─── CRM: Staff & Roles ─────────────────────────────────────────────────
+// Deliberately separate from User/UserRole above — staff logins for the
+// Uniflex Global Logistics dispatch CRM (uniflexstore.com/crm) are fully
+// isolated from storefront customer accounts.
+
+enum CrmRole {
+  CALLER
+  DISPATCHER
+  CRM_ADMIN
+}
+
+model CrmStaff {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  passwordHash   String
+  role           CrmRole
+  phone          String?
+  isActive       Boolean  @default(true)
+  // CALLER only: can assign a qualified lead straight to a dispatcher,
+  // skipping the CRM_ADMIN "awaiting assignment" queue.
+  isSeniorCaller Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  assignedProspects Prospect[]
+  qualifiedLeads    Lead[]        @relation("LeadQualifiedBy")
+  assignedLeads     Lead[]        @relation("LeadAssignedDispatcher")
+  assignedCarriers  Carrier[]
+  activityLogs      ActivityLog[]
+  dispatchedLoads   Load[]
+  checkCallsLogged  CheckCall[]
+  documentsUploaded Document[]
+  commissions       Commission[]
+
+  @@index([email])
+  @@index([role])
+}
+
+// ─── CRM: Prospects (cold-call queue, pre-qualification) ────────────────
+
+enum ProspectSource {
+  LOGISTICS_FORM
+  IMPORT
+  MANUAL
+}
+
+enum ProspectStatus {
+  NEW
+  NO_ANSWER
+  CALL_BACK_LATER
+  NOT_INTERESTED
+  DO_NOT_CALL
+  QUALIFIED
+}
+
+model Prospect {
+  id              String         @id @default(cuid())
+  name            String
+  phone           String
+  email           String?
+  truckType       String?
+  route           String?
+  message         String?
+  source          ProspectSource @default(MANUAL)
+  status          ProspectStatus @default(NEW)
+  assignedToId    String?
+  // Free-text label for a bulk CSV/Excel import batch, e.g. "carriers-june.csv — 2026-07-02"
+  importBatch     String?
+  callBackAt      DateTime?
+  qualifiedLeadId String?        @unique
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  assignedTo    CrmStaff?     @relation(fields: [assignedToId], references: [id])
+  qualifiedLead Lead?         @relation(fields: [qualifiedLeadId], references: [id])
+  activity      ActivityLog[]
+
+  @@index([status])
+  @@index([assignedToId])
+}
+
+// ─── CRM: Leads (qualified, awaiting/assigned to a dispatcher) ──────────
+
+enum LeadStatus {
+  AWAITING_ASSIGNMENT
+  ASSIGNED
+  SIGNED
+  LOST
+}
+
+model Lead {
+  id                 String     @id @default(cuid())
+  name               String
+  phone              String
+  email              String
+  mcNumber           String?
+  address            String?
+  truckType          String
+  weightAllowed      String?
+  preferredRoute     String?
+  availableAt        DateTime?
+  notes              String?
+  status             LeadStatus @default(AWAITING_ASSIGNMENT)
+  qualifiedById      String?
+  assignedToId       String?
+  lostReason         String?
+  convertedCarrierId String?    @unique
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  qualifiedBy CrmStaff?     @relation("LeadQualifiedBy", fields: [qualifiedById], references: [id])
+  assignedTo  CrmStaff?     @relation("LeadAssignedDispatcher", fields: [assignedToId], references: [id])
+  prospect    Prospect?
+  carrier     Carrier?      @relation(fields: [convertedCarrierId], references: [id])
+  activity    ActivityLog[]
+  commissions Commission[]
+
+  @@index([status])
+  @@index([assignedToId])
+  @@index([qualifiedById])
+}
+
+// ─── CRM: Carriers (created once a lead is assigned to a dispatcher) ────
+
+enum CarrierStatus {
+  ONBOARDING
+  ACTIVE
+  INACTIVE
+  TERMINATED
+}
+
+model Carrier {
+  id                   String        @id @default(cuid())
+  companyName          String
+  contactName          String
+  phone                String
+  email                String
+  mcNumber             String?
+  dotNumber            String?
+  address              String?
+  status               CarrierStatus @default(ONBOARDING)
+  assignedDispatcherId String?
+  notes                String?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  assignedDispatcher CrmStaff?     @relation(fields: [assignedDispatcherId], references: [id])
+  lead               Lead?
+  activity           ActivityLog[]
+  trucks             Truck[]
+  drivers            Driver[]
+  documents          Document[]
+  loads              Load[]
+  invoices           Invoice[]
+
+  @@index([status])
+  @@index([assignedDispatcherId])
+}
+
+// ─── CRM: Activity Log ───────────────────────────────────────────────────
+// One shared, polymorphic-shaped log for calls/notes/status changes across
+// prospects, leads, and carriers — avoids a separate log table per entity.
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  staffId    String?
+  prospectId String?
+  leadId     String?
+  carrierId  String?
+  type       String // "call" | "status_change" | "note" | "import" | "qualify" | "assign"
+  note       String?
+  createdAt  DateTime @default(now())
+
+  staff    CrmStaff? @relation(fields: [staffId], references: [id])
+  prospect Prospect? @relation(fields: [prospectId], references: [id])
+  lead     Lead?     @relation(fields: [leadId], references: [id])
+  carrier  Carrier?  @relation(fields: [carrierId], references: [id])
+  load     Load?     @relation(fields: [loadId], references: [id])
+  loadId   String?
+
+  @@index([prospectId])
+  @@index([leadId])
+  @@index([carrierId])
+  @@index([staffId])
+}
+
+// ─── CRM: Trucks & Drivers (Phase B) ─────────────────────────────────────
+
+model Truck {
+  id            String   @id @default(cuid())
+  carrierId     String
+  unitNumber    String
+  equipmentType String // matches TRUCK_TYPES in src/config/crm.ts
+  make          String?
+  model         String?
+  year          Int?
+  vin           String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  carrier Carrier  @relation(fields: [carrierId], references: [id], onDelete: Cascade)
+  drivers Driver[]
+  loads   Load[]
+
+  @@index([carrierId])
+}
+
+model Driver {
+  id        String   @id @default(cuid())
+  carrierId String
+  truckId   String?
+  name      String
+  phone     String
+  cdlNumber String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  carrier Carrier @relation(fields: [carrierId], references: [id], onDelete: Cascade)
+  truck   Truck?  @relation(fields: [truckId], references: [id])
+  loads   Load[]
+
+  @@index([carrierId])
+  @@index([truckId])
+}
+
+// ─── CRM: Documents (Phase B) ─────────────────────────────────────────
+// Expiry status (valid / expiring soon / expired) is derived from
+// `expiresAt` at query time — never stored, so it can never drift stale.
+
+enum DocumentType {
+  W9
+  COI
+  AUTHORITY_LETTER
+  DISPATCH_AGREEMENT
+  OTHER
+}
+
+model Document {
+  id           String       @id @default(cuid())
+  carrierId    String
+  type         DocumentType
+  fileUrl      String
+  fileName     String
+  issuedAt     DateTime?
+  expiresAt    DateTime?
+  uploadedById String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  carrier    Carrier   @relation(fields: [carrierId], references: [id], onDelete: Cascade)
+  uploadedBy CrmStaff? @relation(fields: [uploadedById], references: [id])
+
+  @@index([carrierId])
+  @@index([expiresAt])
+}
+
+// ─── CRM: Loads & Check Calls (Phase B) ───────────────────────────────
+
+enum LoadStatus {
+  BOOKED
+  DISPATCHED
+  IN_TRANSIT
+  DELIVERED
+  INVOICED
+  PAID
+  CANCELLED
+}
+
+model Load {
+  id             String     @id @default(cuid())
+  carrierId      String
+  truckId        String?
+  driverId       String?
+  dispatcherId   String?
+  loadNumber     String     @unique
+  broker         String?
+  // Phase D: DAT/Truckstop load-board reference — nullable, unused until
+  // that integration exists.
+  externalLoadId String?
+  originCity     String
+  originState    String
+  destCity       String
+  destState      String
+  pickupAt       DateTime?
+  deliveryAt     DateTime?
+  rate           Decimal    @db.Decimal(10, 2)
+  dispatchFeePct Decimal?   @db.Decimal(5, 2)
+  status         LoadStatus @default(BOOKED)
+  rateConUrl     String?
+  bolUrl         String?
+  notes          String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  carrier     Carrier       @relation(fields: [carrierId], references: [id])
+  truck       Truck?        @relation(fields: [truckId], references: [id])
+  driver      Driver?       @relation(fields: [driverId], references: [id])
+  dispatcher  CrmStaff?     @relation(fields: [dispatcherId], references: [id])
+  checkCalls  CheckCall[]
+  invoice     Invoice?
+  activity    ActivityLog[]
+  commissions Commission[]
+
+  @@index([carrierId])
+  @@index([status])
+  @@index([dispatcherId])
+}
+
+model CheckCall {
+  id         String   @id @default(cuid())
+  loadId     String
+  note       String
+  location   String?
+  loggedById String?
+  createdAt  DateTime @default(now())
+
+  load     Load      @relation(fields: [loadId], references: [id], onDelete: Cascade)
+  loggedBy CrmStaff? @relation(fields: [loggedById], references: [id])
+
+  @@index([loadId])
+}
+
+// ─── CRM: Invoicing & Commissions (Phase C) ───────────────────────────
+// Invoice here represents Uniflex's dispatch-fee invoice to the carrier
+// (the carrier separately invoices the broker for the full load rate,
+// typically via factoring) — confirm exact semantics before relying on
+// this for real billing.
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  UNPAID
+  OVERDUE
+  PAID
+  FACTORED
+}
+
+model Invoice {
+  id                String        @id @default(cuid())
+  loadId            String?       @unique
+  carrierId         String
+  invoiceNumber     String        @unique
+  amount            Decimal       @db.Decimal(10, 2)
+  dueDate           DateTime?
+  status            InvoiceStatus @default(DRAFT)
+  sentToFactoringAt DateTime?
+  paidAt            DateTime?
+  notes             String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  load    Load?   @relation(fields: [loadId], references: [id])
+  carrier Carrier @relation(fields: [carrierId], references: [id])
+
+  @@index([carrierId])
+  @@index([status])
+}
+
+// Manual ledger only in Phase C — no auto-calculation until commission
+// rules (percentage vs flat, who approves/pays) are confirmed.
+model Commission {
+  id       String    @id @default(cuid())
+  staffId  String
+  loadId   String?
+  leadId   String?
+  amount   Decimal   @db.Decimal(10, 2)
+  type     String // "dispatch_fee_share" | "signed_bonus" — free-form until rules are formalized
+  earnedAt DateTime  @default(now())
+  paidAt   DateTime?
+
+  staff CrmStaff @relation(fields: [staffId], references: [id])
+  load  Load?    @relation(fields: [loadId], references: [id])
+  lead  Lead?    @relation(fields: [leadId], references: [id])
+
+  @@index([staffId])
+  @@index([loadId])
 }
