@@ -163,7 +163,16 @@ export function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-[var(--border-subtle)]">
         <div className="mx-auto flex max-w-[1440px] flex-col items-center justify-between gap-3 px-4 py-4 text-xs text-[var(--text-muted)] sm:flex-row sm:px-6 lg:px-8">
-          <p>© {new Date().getFullYear()} {siteConfig.name}. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.{' '}
+            <span aria-hidden="true">·</span>{' '}
+            <a
+              href="https://nuvforge.com"
+              className="underline-offset-2 transition-colors duration-150 hover:text-[var(--text-primary)] hover:underline"
+            >
+              Built by Nuvforge
+            </a>
+          </p>
           <p className="flex items-center gap-2">
             <span><span aria-hidden="true">🇺🇸</span> United States</span>
             <span aria-hidden="true">·</span>
