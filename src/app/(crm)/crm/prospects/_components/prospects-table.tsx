@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { prospectStatusLabels, prospectStatusVariant } from '@/config/crm'
 import { reassignProspect } from '@/server/actions/crm/prospects'
+import { CopyPhoneButton } from '@/components/crm/copy-phone-button'
 import { WorkProspectDialog } from './work-prospect-dialog'
 import { AddProspectDialog } from './add-prospect-dialog'
 
@@ -73,7 +74,7 @@ export function ProspectsTable({ prospects, total, page, search, isAdmin, isSeni
         <div>
           <p className="text-sm font-medium text-[var(--text-primary)]">{row.name}</p>
           <p className="text-xs text-[var(--text-muted)]">
-            {row.phone}
+            <CopyPhoneButton phone={row.phone} />
             {row.truckType ? ` · ${row.truckType}` : ''}
           </p>
         </div>

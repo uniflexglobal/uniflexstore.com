@@ -23,6 +23,7 @@ export async function convertLeadToCarrierAssignment(
       email: lead.email,
       mcNumber: lead.mcNumber,
       address: lead.address,
+      zipCode: lead.zipCode,
       status: 'ONBOARDING',
       assignedDispatcherId: dispatcherId,
     },

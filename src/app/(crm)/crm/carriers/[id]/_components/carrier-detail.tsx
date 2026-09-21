@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { carrierStatusLabels, carrierStatusVariant, documentTypeLabels, REQUIRED_ONBOARDING_DOCS } from '@/config/crm'
 import { markCarrierActive } from '@/server/actions/crm/carriers'
+import { CopyPhoneButton } from '@/components/crm/copy-phone-button'
 import { ProfileTab } from './profile-tab'
 import { TrucksTab } from './trucks-tab'
 import { DriversTab } from './drivers-tab'
@@ -77,7 +78,7 @@ export function CarrierDetail({ carrier }: { carrier: CarrierDetailData }) {
             <Badge variant={carrierStatusVariant[carrier.status]}>{carrierStatusLabels[carrier.status] ?? carrier.status}</Badge>
           </div>
           <p className="text-sm text-[var(--text-muted)]">
-            {carrier.contactName} · {carrier.phone} · {carrier.email}
+            {carrier.contactName} · <CopyPhoneButton phone={carrier.phone} /> · {carrier.email}
             {carrier.mcNumber ? ` · MC ${carrier.mcNumber}` : ''}
           </p>
         </div>

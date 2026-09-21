@@ -14,9 +14,9 @@ export default async function CrmDashboardPage() {
   const stats = await getCrmDashboard(role, staffId)
 
   return (
-    <>
+    <div className="flex min-h-0 flex-1 flex-col">
       <CrmTopbar title="Dashboard" />
-      <div className="flex-1 overflow-y-auto p-6">
+      <main className="min-h-0 flex-1 overflow-y-auto p-6">
         {stats.role === 'CALLER' && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <StatCard title="On your call list" value={stats.callListCount} icon={Phone} />
@@ -68,7 +68,7 @@ export default async function CrmDashboardPage() {
             </div>
           </>
         )}
-      </div>
-    </>
+      </main>
+    </div>
   )
 }

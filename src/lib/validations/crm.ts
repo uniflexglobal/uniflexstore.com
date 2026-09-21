@@ -70,8 +70,15 @@ export const qualifyLeadSchema = z.object({
   name: z.string().min(1, 'Name is required').trim(),
   phone: z.string().min(7, 'Enter a valid phone number').trim(),
   email: z.string().email('Enter a valid email address').trim(),
-  mcNumber: z.string().optional(),
+  mcNumber: z
+    .string()
+    .regex(/^MC-\d{6}$/, 'MC number must be in the format MC-123456 (6 digits)')
+    .optional(),
   address: z.string().optional(),
+  zipCode: z
+    .string()
+    .regex(/^\d{5}(-\d{4})?$/, 'Enter a valid ZIP code')
+    .optional(),
   truckType: z.string().min(1, 'Truck type is required'),
   weightAllowed: z.string().optional(),
   preferredRoute: z.string().optional(),

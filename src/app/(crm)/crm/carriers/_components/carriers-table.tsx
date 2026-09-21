@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { carrierStatusLabels, carrierStatusVariant } from '@/config/crm'
 import { reassignCarrier } from '@/server/actions/crm/carriers'
+import { CopyPhoneButton } from '@/components/crm/copy-phone-button'
 
 type CarrierRow = {
   id: string
@@ -67,7 +68,7 @@ export function CarriersTable({ carriers, total, page, search, isAdmin, dispatch
         <Link href={`/crm/carriers/${row.id}`} className="hover:underline">
           <p className="text-sm font-medium text-[var(--text-primary)]">{row.companyName}</p>
           <p className="text-xs text-[var(--text-muted)]">
-            {row.contactName} · {row.phone}
+            {row.contactName} · <CopyPhoneButton phone={row.phone} />
             {row.mcNumber ? ` · MC ${row.mcNumber}` : ''}
           </p>
         </Link>

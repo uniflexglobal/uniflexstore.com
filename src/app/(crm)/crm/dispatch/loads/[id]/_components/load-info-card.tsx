@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatUSD } from '@/lib/utils'
+import { CopyPhoneButton } from '@/components/crm/copy-phone-button'
 
 type LoadDetail = {
   broker: string | null
@@ -30,10 +31,18 @@ export function LoadInfoCard({ load }: { load: LoadDetail }) {
         <CardTitle>Load details</CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-        <Field label="Carrier" value={load.carrier.companyName} sub={`${load.carrier.contactName} · ${load.carrier.phone}`} />
+        <Field
+          label="Carrier"
+          value={load.carrier.companyName}
+          sub={<>{load.carrier.contactName} · <CopyPhoneButton phone={load.carrier.phone} /></>}
+        />
         <Field label="Dispatcher" value={load.dispatcher?.name ?? 'Unassigned'} />
         <Field label="Truck" value={load.truck ? `${load.truck.unitNumber} · ${load.truck.equipmentType}` : 'Unassigned'} />
-        <Field label="Driver" value={load.driver ? load.driver.name : 'Unassigned'} sub={load.driver?.phone} />
+        <Field
+          label="Driver"
+          value={load.driver ? load.driver.name : 'Unassigned'}
+          sub={load.driver ? <CopyPhoneButton phone={load.driver.phone} /> : undefined}
+        />
         <Field label="Broker" value={load.broker ?? '—'} />
         <Field label="Rate" value={formatUSD(Number(load.rate))} sub={load.dispatchFeePct ? `${load.dispatchFeePct}% dispatch fee` : undefined} />
         <Field
@@ -53,7 +62,7 @@ export function LoadInfoCard({ load }: { load: LoadDetail }) {
   )
 }
 
-function Field({ label, value, sub }: { label: string; value: string; sub?: string | null }) {
+function Field({ label, value, sub }: { label: string; value: string; sub?: React.ReactNode }) {
   return (
     <div>
       <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{label}</p>

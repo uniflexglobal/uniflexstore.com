@@ -40,3 +40,29 @@ export async function markLeadLost(leadId: string, reason?: string) {
   revalidatePath('/crm/leads')
   return { success: true }
 }
+
+// Deletes the Lead record only — if it was already converted to a Carrier,
+// that Carrier (and its trucks/drivers/loads) is untouched. Related
+// Prospect/ActivityLog/Commission rows are unlinked, not deleted, so their
+// own history stays intact.
+export async function deleteLead(leadId: string) {
+  await requireCrmRole('CRM_ADMIN')
+
+  const lead = await db.lead.findUnique({ where: { id: leadId } })
+  if (!lead) return { error: 'Lead not found' }
+
+  try {
+    await db.$transaction([
+      db.prospect.updateMany({ where: { qualifiedLeadId: leadId }, data: { qualifiedLeadId: null } }),
+      db.activityLog.updateMany({ where: { leadId }, data: { leadId: null } }),
+      db.commission.updateMany({ where: { leadId }, data: { leadId: null } }),
+      db.lead.delete({ where: { id: leadId } }),
+    ])
+  } catch {
+    return { error: 'Failed to delete lead' }
+  }
+
+  revalidatePath('/crm/leads')
+  revalidatePath('/crm')
+  return { success: true }
+}

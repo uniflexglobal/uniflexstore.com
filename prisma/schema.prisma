@@ -588,6 +588,7 @@ model Lead {
   email              String
   mcNumber           String?
   address            String?
+  zipCode            String?
   truckType          String
   weightAllowed      String?
   preferredRoute     String?
@@ -631,6 +632,7 @@ model Carrier {
   mcNumber             String?
   dotNumber            String?
   address              String?
+  zipCode              String?
   status               CarrierStatus @default(ONBOARDING)
   assignedDispatcherId String?
   notes                String?

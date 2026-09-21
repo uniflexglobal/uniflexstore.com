@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { leadStatusLabels, leadStatusVariant } from '@/config/crm'
 import { AssignDispatcherButton } from '@/components/crm/assign-dispatcher-button'
 import { MarkLostButton } from '@/components/crm/mark-lost-button'
+import { DeleteLeadButton } from '@/components/crm/delete-lead-button'
+import { CopyPhoneButton } from '@/components/crm/copy-phone-button'
 
 type LeadRow = {
   id: string
@@ -54,7 +56,7 @@ export function LeadsTable({ leads, total, page, search, role, dispatchers }: Le
         <div>
           <p className="text-sm font-medium text-[var(--text-primary)]">{row.name}</p>
           <p className="text-xs text-[var(--text-muted)]">
-            {row.phone} · {row.truckType}
+            <CopyPhoneButton phone={row.phone} /> · {row.truckType}
           </p>
         </div>
       ),
@@ -81,7 +83,7 @@ export function LeadsTable({ leads, total, page, search, role, dispatchers }: Le
     {
       key: 'actions',
       label: '',
-      className: 'w-32',
+      className: 'w-44',
       render: (row) => (
         <div className="flex justify-end gap-2">
           {role === 'CRM_ADMIN' && row.status === 'AWAITING_ASSIGNMENT' && (
@@ -90,6 +92,7 @@ export function LeadsTable({ leads, total, page, search, role, dispatchers }: Le
           {(role === 'CRM_ADMIN' || role === 'DISPATCHER') && row.status === 'ASSIGNED' && (
             <MarkLostButton leadId={row.id} leadName={row.name} />
           )}
+          {role === 'CRM_ADMIN' && <DeleteLeadButton leadId={row.id} leadName={row.name} />}
         </div>
       ),
     },

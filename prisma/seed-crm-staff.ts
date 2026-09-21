@@ -28,7 +28,7 @@ async function main() {
     where: { email: 'admin@uniflexlogistics.com' },
     update: {},
     create: {
-      name: 'Dana Whitfield',
+      name: 'Ahmed',
       email: 'admin@uniflexlogistics.com',
       passwordHash,
       role: 'CRM_ADMIN',
@@ -39,7 +39,7 @@ async function main() {
     where: { email: 'caller@uniflexlogistics.com' },
     update: {},
     create: {
-      name: 'Priya Nandan',
+      name: 'Talha',
       email: 'caller@uniflexlogistics.com',
       passwordHash,
       role: 'CALLER',
@@ -51,7 +51,7 @@ async function main() {
     where: { email: 'dispatcher@uniflexlogistics.com' },
     update: {},
     create: {
-      name: 'Marcus Webb',
+      name: 'Osaid',
       email: 'dispatcher@uniflexlogistics.com',
       passwordHash,
       role: 'DISPATCHER',
@@ -59,10 +59,10 @@ async function main() {
   })
 
   console.log('✅ CRM staff ready')
-  console.log('\n📋 Test accounts (all use password: Crm@12345):')
-  console.log('  Admin      → admin@uniflexlogistics.com')
-  console.log('  Caller     → caller@uniflexlogistics.com  (senior — can assign directly to a dispatcher)')
-  console.log('  Dispatcher → dispatcher@uniflexlogistics.com')
+  console.log('\n📋 Test accounts (password: Crm@12345 — admin password may have been changed separately, check with whoever last reset it):')
+  console.log('  Admin      → admin@uniflexlogistics.com  (Ahmed)')
+  console.log('  Caller     → caller@uniflexlogistics.com  (Talha — senior, can assign directly to a dispatcher)')
+  console.log('  Dispatcher → dispatcher@uniflexlogistics.com  (Osaid)')
   console.log('\nSign in at /crm/login')
 }
 

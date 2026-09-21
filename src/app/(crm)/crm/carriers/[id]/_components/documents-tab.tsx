@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { useForm } from 'react-hook-form'
-import { Plus, FileText, Trash2 } from 'lucide-react'
+import { Plus, FileText, Trash2, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -114,14 +114,7 @@ export function DocumentsTab({ carrierId, documents }: { carrierId: string; docu
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <a
-                          href={d.fileUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-sm font-medium text-[var(--text-primary)] hover:underline"
-                        >
-                          {documentTypeLabels[d.type]}
-                        </a>
+                        <p className="text-sm font-medium text-[var(--text-primary)]">{documentTypeLabels[d.type]}</p>
                         <Badge variant={badge.variant}>{badge.label}</Badge>
                       </div>
                       <p className="text-xs text-[var(--text-muted)]">
@@ -130,9 +123,16 @@ export function DocumentsTab({ carrierId, documents }: { carrierId: string; docu
                       </p>
                     </div>
                   </div>
-                  <Button size="sm" variant="ghost" disabled={pending} onClick={() => remove(d.id)} aria-label="Delete document">
-                    <Trash2 className="h-3.5 w-3.5 text-[var(--error)]" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button size="sm" variant="outline" asChild>
+                      <a href={d.fileUrl} target="_blank" rel="noreferrer">
+                        <Eye className="h-3.5 w-3.5" /> View
+                      </a>
+                    </Button>
+                    <Button size="sm" variant="ghost" disabled={pending} onClick={() => remove(d.id)} aria-label="Delete document">
+                      <Trash2 className="h-3.5 w-3.5 text-[var(--error)]" />
+                    </Button>
+                  </div>
                 </div>
               )
             })}

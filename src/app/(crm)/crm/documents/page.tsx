@@ -1,8 +1,10 @@
 import Link from 'next/link'
+import { Eye } from 'lucide-react'
 import { getSession } from '@/lib/dal'
 import { getAllDocuments } from '@/server/queries/crm/documents'
 import { CrmTopbar } from '@/components/crm/topbar'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { documentTypeLabels } from '@/config/crm'
 
@@ -48,12 +50,13 @@ export default async function DocumentsDashboardPage() {
                 <TableHead>Expires</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Uploaded by</TableHead>
+                <TableHead className="w-20"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {documents.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-10 text-center text-sm text-[var(--text-muted)]">
+                  <TableCell colSpan={7} className="py-10 text-center text-sm text-[var(--text-muted)]">
                     No documents uploaded yet.
                   </TableCell>
                 </TableRow>
@@ -67,11 +70,7 @@ export default async function DocumentsDashboardPage() {
                           {d.carrier.companyName}
                         </Link>
                       </TableCell>
-                      <TableCell>
-                        <a href={d.fileUrl} target="_blank" rel="noreferrer" className="text-sm text-[var(--text-secondary)] hover:underline">
-                          {documentTypeLabels[d.type]}
-                        </a>
-                      </TableCell>
+                      <TableCell className="text-sm text-[var(--text-secondary)]">{documentTypeLabels[d.type]}</TableCell>
                       <TableCell className="text-sm text-[var(--text-muted)]">
                         {d.issuedAt ? new Date(d.issuedAt).toLocaleDateString() : '—'}
                       </TableCell>
@@ -82,6 +81,13 @@ export default async function DocumentsDashboardPage() {
                         <Badge variant={badge.variant}>{badge.label}</Badge>
                       </TableCell>
                       <TableCell className="text-sm text-[var(--text-muted)]">{d.uploadedBy?.name ?? '—'}</TableCell>
+                      <TableCell>
+                        <Button size="sm" variant="outline" asChild>
+                          <a href={d.fileUrl} target="_blank" rel="noreferrer">
+                            <Eye className="h-3.5 w-3.5" /> View
+                          </a>
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   )
                 })

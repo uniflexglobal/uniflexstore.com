@@ -46,6 +46,24 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, loading = false, disabled, children, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button'
 
+    // Radix Slot (used when asChild) requires exactly one React element
+    // child, via React.Children.only — it can't accept the loading
+    // indicator as a sibling, so asChild bypasses it and just forwards
+    // children untouched. (loading is meaningless combined with asChild
+    // anyway, since there's no button element left to inject a spinner into.)
+    if (asChild) {
+      return (
+        <Comp
+          ref={ref}
+          className={cn(buttonVariants({ variant, size }), className)}
+          disabled={disabled}
+          {...props}
+        >
+          {children}
+        </Comp>
+      )
+    }
+
     return (
       <Comp
         ref={ref}

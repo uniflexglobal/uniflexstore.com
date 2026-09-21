@@ -41,7 +41,10 @@ export const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        'relative z-50 max-h-80 min-w-[8rem] overflow-hidden rounded-md border border-[var(--border-default)] bg-[var(--bg-base)] shadow-lg',
+        // Above --z-modal (Dialog content) so a Select opened inside a Dialog
+        // isn't rendered behind it — both are portaled to document.body, so
+        // stacking is purely z-index, not DOM nesting.
+        'relative z-[var(--z-toast)] max-h-80 min-w-[8rem] overflow-hidden rounded-md border border-[var(--border-default)] bg-[var(--bg-base)] shadow-lg',
         'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
         position === 'popper' && 'data-[side=bottom]:translate-y-1 data-[side=top]:-translate-y-1',
         className

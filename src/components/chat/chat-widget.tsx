@@ -41,7 +41,7 @@ interface ChatWidgetProps {
 
 // ─── Hidden routes ────────────────────────────────────────────────────────────
 
-const HIDDEN_PREFIXES = ['/admin', '/auth', '/checkout', '/logistics']
+const HIDDEN_PREFIXES = ['/admin', '/auth', '/checkout', '/logistics', '/crm']
 
 function useShowWidget(pathname: string): boolean {
   return !HIDDEN_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'))
@@ -317,13 +317,15 @@ export function ChatWidget({ userId }: ChatWidgetProps) {
   const isLoading = status === 'submitted' || status === 'streaming'
   const hasMessages = messages.length > 0
 
-  // Load thread on mount
+  // Load thread on mount (skip on routes where the widget is hidden — no point
+  // creating/fetching a thread for a bot the visitor can never open)
   useEffect(() => {
+    if (!showWidget) return
     loadThread().then((msgs) => {
       if (msgs.length > 0) setMessages(msgs)
       setThreadLoaded(true)
     })
-  }, [setMessages])
+  }, [setMessages, showWidget])
 
   // Save thread whenever messages change (debounced 1.5 s)
   useEffect(() => {

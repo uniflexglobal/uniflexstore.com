@@ -1,4 +1,5 @@
 import { AssignDispatcherButton } from './assign-dispatcher-button'
+import { CopyPhoneButton } from './copy-phone-button'
 
 type Lead = {
   id: string
@@ -28,7 +29,7 @@ export function AwaitingAssignmentQueue({ leads, dispatchers }: { leads: Lead[];
             <div>
               <p className="text-sm font-medium text-[var(--text-primary)]">{lead.name}</p>
               <p className="text-xs text-[var(--text-muted)]">
-                {lead.phone} · {lead.truckType}
+                <CopyPhoneButton phone={lead.phone} /> · {lead.truckType}
                 {lead.qualifiedBy ? ` · qualified by ${lead.qualifiedBy.name}` : ''}
               </p>
             </div>

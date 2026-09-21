@@ -139,6 +139,7 @@ export async function qualifyLead(data: z.infer<typeof qualifyLeadSchema>) {
       email: parsed.data.email,
       mcNumber: parsed.data.mcNumber || null,
       address: parsed.data.address || null,
+      zipCode: parsed.data.zipCode || null,
       truckType: parsed.data.truckType,
       weightAllowed: parsed.data.weightAllowed || null,
       preferredRoute: parsed.data.preferredRoute || null,

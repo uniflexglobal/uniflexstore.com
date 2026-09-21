@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { createDriver, updateDriver, deactivateDriver } from '@/server/actions/crm/drivers'
+import { CopyPhoneButton } from '@/components/crm/copy-phone-button'
 import type { TruckRow } from './trucks-tab'
 
 export type DriverRow = {
@@ -106,7 +107,7 @@ export function DriversTab({ carrierId, drivers, trucks }: { carrierId: string; 
                       {!d.isActive && <Badge variant="destructive">Inactive</Badge>}
                     </div>
                     <p className="text-xs text-[var(--text-muted)]">
-                      {d.phone}
+                      <CopyPhoneButton phone={d.phone} />
                       {d.cdlNumber ? ` · CDL ${d.cdlNumber}` : ''}
                     </p>
                   </div>

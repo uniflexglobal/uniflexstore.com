@@ -80,7 +80,14 @@ export function SiteFooter() {
         <div className="mt-14 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/35 sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {new Date().getFullYear()} {logisticsConfig.legalName}. {logisticsConfig.companyName}{' '}
-            is a trade name of {logisticsConfig.legalName}. All rights reserved.
+            is a trade name of {logisticsConfig.legalName}. All rights reserved.{' '}
+            <span aria-hidden="true">·</span>{' '}
+            <a
+              href="https://nuvforge.com"
+              className="underline-offset-2 transition-colors hover:text-white hover:underline"
+            >
+              Website by Nuvforge
+            </a>
           </p>
           <p>{logisticsConfig.serviceArea}</p>
         </div>

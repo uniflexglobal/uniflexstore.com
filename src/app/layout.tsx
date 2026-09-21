@@ -68,7 +68,10 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession()
-  const userId = session?.user?.id ?? null
+  // CRM staff share the same auth session shape but session.user.id is a
+  // CrmStaff id, not a storefront User id — never hand that to the chat
+  // widget, which persists threads via a FK to User.
+  const userId = session?.user && session.user.userType !== 'crm' ? session.user.id : null
 
   return (
     <html

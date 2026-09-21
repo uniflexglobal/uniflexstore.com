@@ -1,0 +1,665 @@
+<title>Uniflex Logistics CRM — Team Demo Script</title>
+<meta name="description" content="Click-by-click live demo script for walking the team through Caller, Admin, and Dispatcher roles." />
+<style>
+  :root {
+    --bg: #f6f9fa;
+    --bg-elevated: #ffffff;
+    --bg-subtle: #eef3f5;
+    --border: #d7e1e5;
+    --border-strong: #b9cad0;
+    --text: #0d1f2d;
+    --text-secondary: #37586f;
+    --text-muted: #64808d;
+    --accent: #0b8fa0;
+    --accent-strong: #086b78;
+    --accent-wash: #0b8fa014;
+    --role-caller: #9a6b12;
+    --role-caller-wash: #9a6b1214;
+    --role-dispatcher: #0b8fa0;
+    --role-dispatcher-wash: #0b8fa014;
+    --role-admin: #4a4f8c;
+    --role-admin-wash: #4a4f8c14;
+    --good: #0f7a4a;
+    --good-wash: #0f7a4a14;
+    --warn: #a15c00;
+    --warn-wash: #a15c0014;
+    --shadow: 0 1px 2px rgba(13, 31, 45, 0.06), 0 8px 24px rgba(13, 31, 45, 0.06);
+
+    --font-display: Bahnschrift, "SF Compact Condensed", "Arial Narrow", "Helvetica Neue Condensed", sans-serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: "Cascadia Code", "Consolas", "SF Mono", Menlo, "Liberation Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0a1520;
+      --bg-elevated: #0d1f2d;
+      --bg-subtle: #101f2b;
+      --border: #1a3040;
+      --border-strong: #24425a;
+      --text: #e8f4f8;
+      --text-secondary: #a8cad5;
+      --text-muted: #7aa0ae;
+      --accent: #29c4d9;
+      --accent-strong: #5fd6e6;
+      --accent-wash: #29c4d91c;
+      --role-caller: #d9a441;
+      --role-caller-wash: #d9a4411c;
+      --role-dispatcher: #29c4d9;
+      --role-dispatcher-wash: #29c4d91c;
+      --role-admin: #8b93d9;
+      --role-admin-wash: #8b93d91c;
+      --good: #3ecf8e;
+      --good-wash: #3ecf8e1c;
+      --warn: #e0a63e;
+      --warn-wash: #e0a63e1c;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 28px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0a1520;
+    --bg-elevated: #0d1f2d;
+    --bg-subtle: #101f2b;
+    --border: #1a3040;
+    --border-strong: #24425a;
+    --text: #e8f4f8;
+    --text-secondary: #a8cad5;
+    --text-muted: #7aa0ae;
+    --accent: #29c4d9;
+    --accent-strong: #5fd6e6;
+    --accent-wash: #29c4d91c;
+    --role-caller: #d9a441;
+    --role-caller-wash: #d9a4411c;
+    --role-dispatcher: #29c4d9;
+    --role-dispatcher-wash: #29c4d91c;
+    --role-admin: #8b93d9;
+    --role-admin-wash: #8b93d91c;
+    --good: #3ecf8e;
+    --good-wash: #3ecf8e1c;
+    --warn: #e0a63e;
+    --warn-wash: #e0a63e1c;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 28px rgba(0, 0, 0, 0.35);
+  }
+
+  :root[data-theme="light"] {
+    --bg: #f6f9fa;
+    --bg-elevated: #ffffff;
+    --bg-subtle: #eef3f5;
+    --border: #d7e1e5;
+    --border-strong: #b9cad0;
+    --text: #0d1f2d;
+    --text-secondary: #37586f;
+    --text-muted: #64808d;
+    --accent: #0b8fa0;
+    --accent-strong: #086b78;
+    --accent-wash: #0b8fa014;
+    --role-caller: #9a6b12;
+    --role-caller-wash: #9a6b1214;
+    --role-dispatcher: #0b8fa0;
+    --role-dispatcher-wash: #0b8fa014;
+    --role-admin: #4a4f8c;
+    --role-admin-wash: #4a4f8c14;
+    --good: #0f7a4a;
+    --good-wash: #0f7a4a14;
+    --warn: #a15c00;
+    --warn-wash: #a15c0014;
+    --shadow: 0 1px 2px rgba(13, 31, 45, 0.06), 0 8px 24px rgba(13, 31, 45, 0.06);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--accent-strong); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+  .shell {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 720px);
+    justify-content: center;
+    gap: 48px;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px 96px;
+  }
+
+  /* ---------- Masthead ---------- */
+  .masthead {
+    grid-column: 1 / -1;
+    max-width: 720px;
+    margin: 0 auto 8px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  .masthead .eyebrow {
+    font-family: var(--font-display);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 12px;
+    color: var(--accent-strong);
+    margin: 0 0 10px;
+  }
+  .masthead h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(28px, 4vw, 38px);
+    letter-spacing: 0.01em;
+    line-height: 1.12;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+  .masthead p {
+    color: var(--text-secondary);
+    font-size: 16px;
+    max-width: 62ch;
+    margin: 0;
+  }
+
+  /* ---------- Nav rail ---------- */
+  nav.rail {
+    position: sticky;
+    top: 40px;
+    align-self: start;
+    font-family: var(--font-display);
+  }
+  nav.rail .rail-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin: 0 0 10px;
+  }
+  nav.rail ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 1px solid var(--border);
+  }
+  nav.rail li { margin: 0; }
+  nav.rail a {
+    display: block;
+    padding: 7px 0 7px 16px;
+    margin-left: -1px;
+    border-left: 2px solid transparent;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14.5px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  nav.rail a:hover { color: var(--text); }
+  nav.rail a.active { color: var(--accent-strong); border-left-color: var(--accent); }
+  nav.rail .rail-sub { padding-left: 30px; font-size: 13px; font-weight: 400; }
+
+  /* ---------- Content column ---------- */
+  main { min-width: 0; }
+
+  section { margin-bottom: 52px; scroll-margin-top: 32px; }
+  section > h2 { scroll-margin-top: 32px; }
+  section h3 { scroll-margin-top: 32px; }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 25px;
+    letter-spacing: 0.01em;
+    margin: 0 0 6px;
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: 0.01em;
+    margin: 26px 0 10px;
+  }
+  p { margin: 0 0 14px; max-width: 66ch; }
+  ul, ol { margin: 0 0 14px; padding-left: 22px; }
+  li { margin-bottom: 6px; max-width: 62ch; }
+  strong { font-weight: 650; }
+  code, .kbd {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 0.1em 0.45em;
+  }
+
+  /* ---------- Role chip ---------- */
+  .role-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 10px 4px 8px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+  }
+  .role-chip .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .role-chip.caller { color: var(--role-caller); background: var(--role-caller-wash); }
+  .role-chip.admin { color: var(--role-admin); background: var(--role-admin-wash); }
+  .role-chip.dispatcher { color: var(--role-dispatcher); background: var(--role-dispatcher-wash); }
+
+  .part-meta {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin: -2px 0 20px;
+  }
+  .part-meta code { margin-right: 2px; }
+
+  /* ---------- Card ---------- */
+  .card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 20px 22px;
+    margin: 0 0 18px;
+  }
+
+  /* ---------- Credentials table ---------- */
+  .cred-table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  .cred-table th {
+    text-align: left;
+    font-family: var(--font-display);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 0 10px 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .cred-table td {
+    padding: 10px 10px 10px 0;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    font-variant-numeric: tabular-nums;
+  }
+  .cred-table tr:last-child td { border-bottom: none; }
+  .cred-table td.mono, .cred-table code { font-family: var(--font-mono); }
+  .cred-table .who { font-weight: 650; }
+
+  /* ---------- Steps ---------- */
+  .steps { list-style: none; margin: 0 0 16px; padding: 0; }
+  .steps > li {
+    position: relative;
+    padding: 2px 0 2px 34px;
+    margin-bottom: 14px;
+    max-width: 64ch;
+  }
+  .steps > li::before {
+    content: attr(data-n);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    background: var(--accent-wash);
+    color: var(--accent-strong);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 12.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .steps .click { color: var(--text); }
+  .steps .note { color: var(--text-muted); font-size: 14px; }
+
+  /* ---------- Say-this callout ---------- */
+  .say {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-wash);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 14px 0;
+    font-size: 15px;
+    color: var(--text);
+  }
+  .say .say-label {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent-strong);
+    margin-bottom: 5px;
+  }
+  .say em { font-style: normal; color: var(--text-secondary); }
+
+  /* ---------- Wrap-up line ---------- */
+  .wrapup {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border-strong);
+    font-size: 14.5px;
+    color: var(--text-secondary);
+  }
+  .wrapup strong { color: var(--text); }
+
+  /* ---------- Callout list (closing talking points) ---------- */
+  .talking-points { list-style: none; margin: 0; padding: 0; }
+  .talking-points li {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    max-width: 66ch;
+  }
+  .talking-points li:last-child { border-bottom: none; }
+  .talking-points strong { display: block; font-family: var(--font-display); font-size: 14.5px; margin-bottom: 3px; }
+
+  /* ---------- Reference table ---------- */
+  .ref-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  table.ref { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 480px; }
+  table.ref th {
+    text-align: left;
+    background: var(--bg-subtle);
+    font-family: var(--font-display);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  table.ref td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+  table.ref tr:last-child td { border-bottom: none; }
+  table.ref td:first-child { color: var(--text); font-weight: 550; }
+  table.ref code { white-space: nowrap; }
+
+  hr.div { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+  footer.doc-foot {
+    max-width: 66ch;
+    margin-top: 8px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 13.5px;
+  }
+  footer.doc-foot code { font-size: 0.85em; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; padding: 24px 18px 72px; }
+    nav.rail {
+      position: static;
+      margin-bottom: 8px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    nav.rail ol { border-left: none; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+    nav.rail a { padding: 4px 0; border-left: none; }
+    nav.rail a.active { color: var(--accent-strong); text-decoration: underline; }
+    nav.rail .rail-sub { display: none; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+</style>
+
+<div class="masthead">
+  <p class="eyebrow">Uniflex Global Logistics · Internal CRM</p>
+  <h1>Team Demo Script</h1>
+  <p>You're screen-sharing and driving this yourself, switching between the three logins live. This is written in the order to actually click through — follow it top to bottom and it tells one complete story, not three disconnected feature tours.</p>
+</div>
+
+<div class="shell">
+  <nav class="rail" aria-label="Section navigation">
+    <p class="rail-label">On this page</p>
+    <ol id="railList">
+      <li><a href="#before">Before you go live</a></li>
+      <li><a href="#pitch">The 90-second pitch</a></li>
+      <li><a href="#part1">Part 1 — Talha, Caller</a>
+        <ol><li class="rail-sub"><a href="#part1">Dashboard → Call List → Qualify</a></li></ol>
+      </li>
+      <li><a href="#part2">Part 2 — Ahmed, Admin</a>
+        <ol><li class="rail-sub"><a href="#part2">Assign the queue → tour every page</a></li></ol>
+      </li>
+      <li><a href="#part3">Part 3 — Osaid, Dispatcher</a>
+        <ol><li class="rail-sub"><a href="#part3">Onboard → book a load → invoice</a></li></ol>
+      </li>
+      <li><a href="#closing">Closing the demo</a></li>
+      <li><a href="#reference">Page reference</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="before">
+      <h2>Before you go live</h2>
+      <ol class="steps">
+        <li data-n="1"><span class="click">Start the app</span> — open a terminal in the project folder and run <code>npm run dev</code>, wait for "Ready", then confirm <code>localhost:3000/crm/login</code> loads.</li>
+        <li data-n="2"><span class="click">Have all three passwords handy</span> — table below.</li>
+        <li data-n="3"><span class="click">Optional:</span> <span class="note">open three separate browser profiles or incognito windows if you want to stay logged into more than one role at once — otherwise just log out and back in as you switch (Sign out is bottom-left of the sidebar).</span></li>
+      </ol>
+
+      <div class="card">
+        <table class="cred-table">
+          <thead>
+            <tr><th>Role</th><th>Email</th><th>Password</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="who">Admin — Ahmed</td><td class="mono"><code>admin@uniflexlogistics.com</code></td><td class="mono"><code>admin12345</code></td></tr>
+            <tr><td class="who">Dispatcher — Osaid</td><td class="mono"><code>dispatcher@uniflexlogistics.com</code></td><td class="mono"><code>Crm@12345</code></td></tr>
+            <tr><td class="who">Caller — Talha</td><td class="mono"><code>caller@uniflexlogistics.com</code></td><td class="mono"><code>Crm@12345</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="pitch">
+      <h2>The 90-second version — say this before you start clicking</h2>
+      <div class="say">
+        <span class="say-label">Say this</span>
+        <em>"Right now, when someone fills out our website's quote form, it's just an email — nothing tracked, nobody assigned. This system fixes that. A lead comes in, a Caller works it and qualifies it, an Admin — or a trusted senior Caller — hands it to a Dispatcher, the Dispatcher signs the carrier up, gets their trucks and paperwork on file, books loads for them, and we invoice our dispatch fee. Every step is logged. I'm going to show you the whole thing end to end, then show each of you your own screen."</em>
+      </div>
+    </section>
+
+    <hr class="div" />
+
+    <section id="part1">
+      <span class="role-chip caller"><span class="dot"></span>Caller</span>
+      <h2>Part 1 — Log in as Talha</h2>
+      <p class="part-meta"><code>localhost:3000/crm/login</code> → <code>caller@uniflexlogistics.com</code> / <code>Crm@12345</code></p>
+
+      <h3>Dashboard</h3>
+      <p>First thing after login. Two numbers: how many prospects are on the call list today, and how many have been qualified this week. This is a Caller's "what do I do today" screen — nothing more.</p>
+
+      <h3>Call List <span class="note" style="font-weight:400;font-size:14px;">(sidebar)</span></h3>
+      <p>This is the actual job. Every row is someone to call.</p>
+      <ul>
+        <li>Point out name, phone number, and the <strong>copy icon</strong> next to it — click it, show the toast, mention it copies as <code>+1XXXXXXXXXX</code> ready to paste into a dialer.</li>
+        <li>Point out the status filter tabs across the top (New, No answer, Call back later, etc.).</li>
+      </ul>
+      <ol class="steps">
+        <li data-n="1"><span class="click">Click "Call"</span> on any row that isn't already Qualified. A dialog opens with four outcome buttons: No answer / Call back later / Not interested / Do not call — click one live, show the toast, show the row's status badge update.</li>
+        <li data-n="2"><span class="click">Re-open a fresh one</span> and click the teal <strong>"This call was successful — Qualify"</strong> button instead.</li>
+        <li data-n="3"><span class="click">Fill the qualify form</span> — name, phone, email, MC number, truck type, weight, preferred route, availability date, notes.</li>
+        <li data-n="4"><span class="click">Submit</span> — and point out the "Assign to dispatcher now" dropdown, since Talha is a senior Caller. <span class="note">Leave it blank for this demo so it lands in Admin's queue instead — that's Part 2.</span></li>
+      </ol>
+
+      <h3>Import Prospects <span class="note" style="font-weight:400;font-size:14px;">(sidebar)</span></h3>
+      <p>Show the upload box — accepts CSV or Excel with at minimum a Name and Phone column. Upload a real sample list live if you have one; otherwise just explain the flow.</p>
+
+      <h3>Leads <span class="note" style="font-weight:400;font-size:14px;">(sidebar)</span></h3>
+      <p>Talha's own history of everyone he's qualified, and what happened after — still waiting, assigned, or signed.</p>
+
+      <div class="wrapup"><strong>For Callers on your team:</strong> your whole day lives on the Call List page. Qualify a lead right and it's out of your hands — Admin or the Dispatcher takes it from here.</div>
+    </section>
+
+    <hr class="div" />
+
+    <section id="part2">
+      <span class="role-chip admin"><span class="dot"></span>Admin</span>
+      <h2>Part 2 — Log in as Ahmed</h2>
+      <p class="part-meta">Sign out, log back in as <code>admin@uniflexlogistics.com</code> / <code>admin12345</code></p>
+
+      <h3>Dashboard</h3>
+      <ul>
+        <li>Company-wide numbers up top: prospects, leads, active carriers, staff, loads this month, revenue this month, documents expiring.</li>
+        <li><strong>The big one:</strong> the "Awaiting Assignment" queue sits right on the dashboard. The lead Talha just qualified in Part 1 should be sitting here.</li>
+      </ul>
+      <ol class="steps">
+        <li data-n="1"><span class="click">Click "Assign"</span> on it, pick Osaid from the dropdown, confirm.</li>
+      </ol>
+      <div class="say"><span class="say-label">Say this</span><em>"This is the one moment Admin controls who gets which carrier."</em></div>
+
+      <h3>Leads <span class="note" style="font-weight:400;font-size:14px;">(sidebar)</span></h3>
+      <p>Same page Callers see, but Admin sees everyone's leads, with Qualified-by and Dispatcher columns, and can assign or delete any lead from here too (trash icon, admin-only).</p>
+
+      <h3>Carriers <span class="note" style="font-weight:400;font-size:14px;">(sidebar)</span></h3>
+      <p>Every signed carrier company-wide. Click into one — show the tabs (Profile / Trucks / Drivers / Documents) and mention Admin can reassign a carrier to a different Dispatcher from the list view.</p>
+
+      <h3>Documents <span class="note" style="font-weight:400;font-size:14px;">(sidebar)</span></h3>
+      <p><strong>This is a big one to sell.</strong> Company-wide list of every uploaded document, colour-coded: red = expired, amber = expiring within 30 days, green = valid.</p>
+      <div class="say"><span class="say-label">Say this</span><em>"This is how we never get caught with an expired insurance cert again."</em></div>
+
+      <h3>Dispatch Board · Invoices · Commissions <span class="note" style="font-weight:400;font-size:14px;">(sidebar)</span></h3>
+      <ul>
+        <li><strong>Dispatch Board</strong> — company-wide Kanban of every load in motion, across every Dispatcher.</li>
+        <li><strong>Invoices</strong> — every dispatch-fee invoice, its status.</li>
+        <li><strong>Commissions</strong> — manual ledger of what each staff member has earned, paid or not.</li>
+      </ul>
+
+      <h3>Reports <span class="note" style="font-weight:400;font-size:14px;">(sidebar)</span></h3>
+      <p>Revenue over time chart, the Prospect → Lead → Carrier conversion funnel, loads per Dispatcher, leads qualified per Caller, commission summary table.</p>
+      <div class="say"><span class="say-label">Say this</span><em>"This is how we'll know who's performing."</em></div>
+
+      <h3>Staff <span class="note" style="font-weight:400;font-size:14px;">(sidebar)</span></h3>
+      <p><strong>Save this for last — it's the one your team needs to actually use after today.</strong> Show "Add Staff": name, email, temporary password, role (Caller/Dispatcher/Admin), and the "senior caller" toggle.</p>
+      <div class="say"><span class="say-label">Say this</span><em>"This is how we create everyone's real login once we're done testing."</em></div>
+
+      <div class="wrapup"><strong>For Admin:</strong> you're the only one who sees everything. Your two jobs day-to-day are the Awaiting Assignment queue and keeping an eye on Documents.</div>
+    </section>
+
+    <hr class="div" />
+
+    <section id="part3">
+      <span class="role-chip dispatcher"><span class="dot"></span>Dispatcher</span>
+      <h2>Part 3 — Log in as Osaid</h2>
+      <p class="part-meta">Sign out, log back in as <code>dispatcher@uniflexlogistics.com</code> / <code>Crm@12345</code></p>
+
+      <h3>Dashboard</h3>
+      <p>Newly assigned leads, active carriers, documents expiring — a Dispatcher's own numbers only.</p>
+
+      <h3>Leads <span class="note" style="font-weight:400;font-size:14px;">(sidebar)</span></h3>
+      <p>The lead Ahmed assigned in Part 2 should be sitting here now, status "Assigned."</p>
+
+      <h3>Carriers <span class="note" style="font-weight:400;font-size:14px;">(sidebar)</span></h3>
+      <ol class="steps">
+        <li data-n="1"><span class="click">Click into the new carrier record</span> — created automatically the moment it was assigned.</li>
+        <li data-n="2"><span class="click">Point out the onboarding checklist banner</span> at the top — W-9, Certificate of Insurance, MC/DOT Authority Letter, Dispatch Agreement. "Mark carrier Active" is greyed out until all four are on file.</li>
+        <li data-n="3"><span class="click">Open the Documents tab</span>, click <strong>Upload document</strong>, pick a type, upload any test file, set an expiry date — show it land in the list with a <strong>View</strong> button.</li>
+        <li data-n="4"><span class="click">Once all four types exist</span> <span class="note">(even reusing one test file four times is fine for the demo)</span>, the "Mark carrier Active" button lights up — click it.</li>
+      </ol>
+
+      <h3>Trucks / Drivers tabs</h3>
+      <p>Add a truck (unit number, equipment type), add a driver, assign the driver to the truck.</p>
+
+      <h3>Dispatch Board <span class="note" style="font-weight:400;font-size:14px;">(sidebar)</span></h3>
+      <ol class="steps">
+        <li data-n="1"><span class="click">Click "New Load"</span> — pick the now-active carrier, its truck/driver auto-populate as options, fill in origin/destination/rate/dispatch fee %, create it.</li>
+        <li data-n="2"><span class="click">Show it land</span> in the Booked column of the Kanban board.</li>
+        <li data-n="3"><span class="click">Click into it</span> — show the check-call log (log one), show the rate confirmation / POD upload slots, then move it through Dispatched → In Transit → Delivered.</li>
+      </ol>
+      <div class="say"><span class="say-label">Say this</span><em>"It won't let you mark Delivered until at least one check call is logged — keeps the record honest."</em></div>
+
+      <h3>Invoices <span class="note" style="font-weight:400;font-size:14px;">(sidebar)</span></h3>
+      <ol class="steps">
+        <li data-n="1"><span class="click">Click "New Invoice"</span>, pick that delivered load — the fee amount pre-fills from rate × dispatch fee %.</li>
+        <li data-n="2"><span class="click">Create it</span>, show the status move Draft → Sent → Paid.</li>
+      </ol>
+
+      <div class="wrapup"><strong>For Dispatchers:</strong> once a lead lands on your desk, you own it end to end — sign them up, get their paperwork, run their loads, get us paid.</div>
+    </section>
+
+    <hr class="div" />
+
+    <section id="closing">
+      <h2>Closing the demo</h2>
+      <ul class="talking-points">
+        <li><strong>What's not built yet, on purpose</strong>Live load-board search (DAT/Truckstop), automatic call/SMS logging, e-signatures — all need paid third-party accounts we don't have yet. The system is built to slot those in later without a rebuild.</li>
+        <li><strong>What happens after today</strong>Go to Staff (as Ahmed) and create everyone's real account, then have them log in and change nothing else — the test accounts (Ahmed/Osaid/Talha) can be deactivated once real ones exist.</li>
+        <li><strong>If anything looks off</strong>Note it and send it over — this is still early and easy to adjust.</li>
+      </ul>
+    </section>
+
+    <section id="reference">
+      <h2>Quick reference — every page, who sees it</h2>
+      <div class="ref-table-wrap">
+        <table class="ref">
+          <thead>
+            <tr><th>Page</th><th>URL</th><th>Who</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Dashboard</td><td><code>/crm</code></td><td>Everyone (content differs by role)</td></tr>
+            <tr><td>Call List</td><td><code>/crm/prospects</code></td><td>Caller, Admin</td></tr>
+            <tr><td>Import Prospects</td><td><code>/crm/prospects/import</code></td><td>Caller, Admin</td></tr>
+            <tr><td>Leads</td><td><code>/crm/leads</code></td><td>Everyone (scope differs by role)</td></tr>
+            <tr><td>Carriers</td><td><code>/crm/carriers</code></td><td>Dispatcher, Admin</td></tr>
+            <tr><td>Documents</td><td><code>/crm/documents</code></td><td>Dispatcher, Admin</td></tr>
+            <tr><td>Dispatch Board</td><td><code>/crm/dispatch</code></td><td>Dispatcher, Admin</td></tr>
+            <tr><td>Invoices</td><td><code>/crm/invoices</code></td><td>Dispatcher, Admin</td></tr>
+            <tr><td>Commissions</td><td><code>/crm/commissions</code></td><td>Admin only</td></tr>
+            <tr><td>Reports</td><td><code>/crm/reports</code></td><td>Admin only</td></tr>
+            <tr><td>Staff</td><td><code>/crm/staff</code></td><td>Admin only</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <footer class="doc-foot">
+        Full technical/page reference: <code>CRM-USAGE-GUIDE.md</code>. Original plan and feature rationale: <code>CRM.md</code>. Both in the project root alongside this file.
+      </footer>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('#railList a'));
+    var sections = links
+      .map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); })
+      .filter(Boolean);
+
+    function setActive(id) {
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+      });
+    }
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(
+        function (entries) {
+          var visible = entries
+            .filter(function (e) { return e.isIntersecting; })
+            .sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; });
+          if (visible.length) setActive(visible[0].target.id);
+        },
+        { rootMargin: '-15% 0px -70% 0px', threshold: 0 }
+      );
+      sections.forEach(function (s) { observer.observe(s); });
+    }
+  })();
+</script>

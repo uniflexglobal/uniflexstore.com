@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { logCallOutcome, qualifyLead } from '@/server/actions/crm/prospects'
 import { TRUCK_TYPES } from '@/config/crm'
+import { CopyPhoneButton } from '@/components/crm/copy-phone-button'
 
 type Prospect = {
   id: string
@@ -50,6 +51,7 @@ export function WorkProspectDialog({ prospect, onClose, canAssignDispatcher, dis
     email: '',
     mcNumber: '',
     address: '',
+    zipCode: '',
     truckType: '',
     weightAllowed: '',
     preferredRoute: '',
@@ -57,6 +59,8 @@ export function WorkProspectDialog({ prospect, onClose, canAssignDispatcher, dis
     notes: '',
     assignToDispatcherId: '',
   })
+
+  const mcNumberValid = qualifyForm.mcNumber.length === 0 || qualifyForm.mcNumber.length === 6
 
   function reset() {
     setMode('outcome')
@@ -78,6 +82,7 @@ export function WorkProspectDialog({ prospect, onClose, canAssignDispatcher, dis
       email: prospect.email ?? '',
       mcNumber: '',
       address: '',
+      zipCode: '',
       truckType: prospect.truckType ?? '',
       weightAllowed: '',
       preferredRoute: prospect.route ?? '',
@@ -109,8 +114,9 @@ export function WorkProspectDialog({ prospect, onClose, canAssignDispatcher, dis
         name: qualifyForm.name,
         phone: qualifyForm.phone,
         email: qualifyForm.email,
-        mcNumber: qualifyForm.mcNumber || undefined,
+        mcNumber: qualifyForm.mcNumber ? `MC-${qualifyForm.mcNumber}` : undefined,
         address: qualifyForm.address || undefined,
+        zipCode: qualifyForm.zipCode || undefined,
         truckType: qualifyForm.truckType,
         weightAllowed: qualifyForm.weightAllowed || undefined,
         preferredRoute: qualifyForm.preferredRoute || undefined,
@@ -146,7 +152,11 @@ export function WorkProspectDialog({ prospect, onClose, canAssignDispatcher, dis
 
         {mode === 'outcome' ? (
           <div className="space-y-4">
-            <p className="text-sm text-[var(--text-muted)]">{prospect?.phone}</p>
+            {prospect && (
+              <p className="text-sm text-[var(--text-muted)]">
+                <CopyPhoneButton phone={prospect.phone} withCountryCode />
+              </p>
+            )}
 
             <div className="grid grid-cols-2 gap-2">
               {OUTCOMES.map(({ status, label, icon: Icon }) => (
@@ -199,7 +209,27 @@ export function WorkProspectDialog({ prospect, onClose, canAssignDispatcher, dis
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="q-mc">MC number</Label>
-                <Input id="q-mc" value={qualifyForm.mcNumber} onChange={(e) => setQualifyForm((f) => ({ ...f, mcNumber: e.target.value }))} />
+                <div
+                  className={`flex h-10 items-center rounded-md border bg-[var(--bg-base)] transition-all duration-150 ${
+                    mcNumberValid
+                      ? 'border-[var(--border-default)] focus-within:border-[var(--brand-accent)] focus-within:ring-2 focus-within:ring-[var(--brand-accent)]/20'
+                      : 'border-[var(--error)] focus-within:ring-2 focus-within:ring-[var(--error)]/20'
+                  }`}
+                >
+                  <span className="pl-3 text-sm text-[var(--text-muted)] select-none">MC-</span>
+                  <input
+                    id="q-mc"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    placeholder="123456"
+                    value={qualifyForm.mcNumber}
+                    onChange={(e) =>
+                      setQualifyForm((f) => ({ ...f, mcNumber: e.target.value.replace(/\D/g, '').slice(0, 6) }))
+                    }
+                    className="h-full w-full rounded-md bg-transparent px-1.5 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
+                  />
+                </div>
+                {!mcNumberValid && <p className="text-xs text-[var(--error)]">Must be 6 digits</p>}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="q-truck">Truck type *</Label>
@@ -218,9 +248,21 @@ export function WorkProspectDialog({ prospect, onClose, canAssignDispatcher, dis
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="q-address">Address</Label>
-              <Input id="q-address" value={qualifyForm.address} onChange={(e) => setQualifyForm((f) => ({ ...f, address: e.target.value }))} />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="q-address">Address</Label>
+                <Input id="q-address" value={qualifyForm.address} onChange={(e) => setQualifyForm((f) => ({ ...f, address: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="q-zip">Zip code</Label>
+                <Input
+                  id="q-zip"
+                  inputMode="numeric"
+                  placeholder="e.g. 75201"
+                  value={qualifyForm.zipCode}
+                  onChange={(e) => setQualifyForm((f) => ({ ...f, zipCode: e.target.value.replace(/[^\d-]/g, '').slice(0, 10) }))}
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -276,7 +318,7 @@ export function WorkProspectDialog({ prospect, onClose, canAssignDispatcher, dis
               type="button"
               variant="accent"
               loading={pending}
-              disabled={!qualifyForm.name || !qualifyForm.phone || !qualifyForm.email || !qualifyForm.truckType}
+              disabled={!qualifyForm.name || !qualifyForm.phone || !qualifyForm.email || !qualifyForm.truckType || !mcNumberValid}
               onClick={submitQualify}
             >
               Qualify lead

@@ -120,9 +120,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
       }
       if (token.id && token.userType === 'crm') {
-        // Re-check active status on every refresh so a deactivated staffer is cut off promptly.
-        const staff = await db.crmStaff.findUnique({ where: { id: token.id as string }, select: { isActive: true } })
+        // Re-check active status on every refresh so a deactivated staffer is cut off promptly,
+        // and refresh name/role too so an admin edit (e.g. renaming staff) shows up without
+        // requiring the staffer to log out and back in.
+        const staff = await db.crmStaff.findUnique({
+          where: { id: token.id as string },
+          select: { isActive: true, name: true, role: true },
+        })
         if (!staff?.isActive) return null
+        token.name = staff.name
+        token.crmRole = staff.role
       } else if (token.id) {
         // Re-check ban status on every token refresh so bans take effect within one refresh cycle
         const dbUser = await db.user.findUnique({ where: { id: token.id as string }, select: { isBanned: true } })

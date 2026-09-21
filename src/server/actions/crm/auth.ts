@@ -2,7 +2,6 @@
 
 import { redirect } from 'next/navigation'
 import { signIn, signOut } from '@/auth'
-import { checkCrmLoginRate } from '@/lib/rate-limit'
 import { loginSchema } from '@/lib/validations/auth'
 import { AuthError } from 'next-auth'
 
@@ -21,10 +20,6 @@ export async function crmLoginAction(
   _prev: CrmActionState,
   formData: FormData
 ): Promise<CrmActionState> {
-  if (!(await checkCrmLoginRate())) {
-    return { error: 'Too many sign-in attempts. Please wait 15 minutes and try again.' }
-  }
-
   const callbackUrl = sanitizeCrmCallbackUrl(formData.get('callbackUrl'))
   const email = formData.get('email') as string
   const password = formData.get('password') as string
